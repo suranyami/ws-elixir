@@ -1,7 +1,7 @@
 %% Feel free to use, reuse and abuse the code in this file.
 
 {application, '__MAIN__.WebsocketsServer', [
-	{description, "Examples for cowboy."},
+	{description, "A minimal Websockets server."},
 	{vsn, "0.1.0"},
 	{modules, []},
 	{registered, ['__MAIN__.WebsocketsSupervisor']},
