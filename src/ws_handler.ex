@@ -31,7 +31,7 @@ defmodule WebsocketsHandler do
     }
     if (\"WebSocket\" in window) {
       // browser supports websockets
-      var ws = new WebSocket(\"ws://localhost:8080/websocket\");
+      ws = new WebSocket(\"ws://localhost:8080/websocket\");
       ws.onopen = function() {
         // websocket is connected
         addStatus(\"websocket connected!\");
@@ -51,6 +51,11 @@ defmodule WebsocketsHandler do
       // browser does not support websockets
       addStatus(\"sorry, your browser does not support websockets.\");
     }
+  }
+
+  function send(message) {
+    ws.send(message);
+    addStatus(\"sent message to server: '\" + message + \"'\");
   }
   </script>
   </head>
