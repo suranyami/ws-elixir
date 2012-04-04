@@ -6,17 +6,26 @@ defmodule HelloHandler do
   end
 
   def handle(request, state) do
-    { path, ^request} = :cowboy_http_req.path(request)
-    case File.read File.join(path) do
-    match: { :ok, data }
-        { :ok, new_req } = :cowboy_http_req.reply 200, [], data, request
-    else:
-        { :ok, new_req } = :cowboy_http_req.reply 200, [], "Hello world!", request
+    case :cowboy_http_req.path(request) do
+    match: { [h|t] = path, ^request}
+      handle_file path, request, state
+    match: other
+      { :ok, new_req } = :cowboy_http_req.reply 200, [], "Hello world!", request
+      { :ok, new_req, state }
     end
-    { :ok, new_req, state }
   end
 
   def terminate(_request, _state) do
     :ok
+  end
+
+  defp handle_file(path, request, state) do
+    case File.read(File.join(path)) do
+    match: { :ok, data }
+      { :ok, new_req } = :cowboy_http_req.reply 200, [], data, request
+    match: other
+      { :ok, new_req } = :cowboy_http_req.reply 404, request
+    end
+    { :ok, new_req, state }
   end
 end

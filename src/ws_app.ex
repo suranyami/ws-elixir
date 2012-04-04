@@ -12,7 +12,6 @@ defmodule WebsocketsServer do
   def start(_type, _args) do
     dispatch = [{:_, [
       {["websocket"], WebsocketsHandler, []},
-      {["assets", "main.js"], HelloHandler, ["main.js"]},
       {:_, HelloHandler, []}
     ]}]
     :cowboy.start_listener :my_http_listener, 100,
