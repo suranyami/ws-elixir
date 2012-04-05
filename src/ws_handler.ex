@@ -28,16 +28,12 @@ defmodule WebsocketsHandler do
     proto = Enum.keyfind headers,
                          "Sec-Websocket-Protocol",
                          1
-    case proto do
-    match: {"Sec-Websocket-Protocol", "mirror-protocol"}
+    if proto === {"Sec-Websocket-Protocol", "mirror-protocol"} do
       subscribe_for_event(:mirror_protocol)
-    else:
-      :ok
     end
 
     :timer.send_interval(50, :tick)
-    new_req = :cowboy_http_req.compact(req)
-    {:ok, new_req, State.new, :hibernate}
+    {:ok, :cowboy_http_req.compact(req), State.new, :hibernate}
   end
 
   def websocket_handle({:text, "reset\n"}, req, state) do
