@@ -4,5 +4,5 @@
 make
 ./start.sh
 open http://localhost:8080
-open http://localhost:8080/websocket
+open http://localhost:8080/ws
 ```
