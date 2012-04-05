@@ -29,11 +29,11 @@ defmodule MirrorHandler do
 
   ## Private functions ##
 
-  def subscribe do
-    :gproc.reg({:p, :l, :mirror_protocol})
+  defp subscribe do
+    :gproc.reg {:p, :l, :mirror_protocol}
   end
 
-  def broadcast(msg) do
+  defp broadcast(msg) do
     :gproc.send {:p, :l, :mirror_protocol},
                 {:mirror_protocol, msg}
   end
