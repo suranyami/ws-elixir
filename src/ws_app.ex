@@ -1,12 +1,15 @@
 defmodule WebsocketsServer do
   @behaviour :application
 
-  def start do
-    status = :application.start :cowboy
-    IO.puts "Starting up cowboy... #{inspect status}"
+  defp start_app(app) do
+    status = :application.start app
+    IO.puts "Starting up #{app}... #{inspect status}"
+  end
 
-    status = :application.start __MODULE__
-    IO.puts "Starting up the server... #{inspect status}"
+  def start do
+    start_app :cowboy
+    start_app :gproc
+    start_app WebsocketsServer
   end
 
   def start(_type, _args) do

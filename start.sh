@@ -1,3 +1,4 @@
 #!/bin/sh
 
-elixir --no-halt -pa ebin -pa deps/cowboy/ebin -e "WebsocketsServer.start"
+ELIXIR=elixir
+${ELIXIR} --no-halt -pa ebin -pa 'deps/*/ebin' -e "WebsocketsServer.start"
