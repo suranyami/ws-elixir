@@ -1,8 +1,7 @@
 defmodule MirrorHandler do
-  @behaviour :simple_handler
+  ##@behaviour :simple_handler
 
   def init(_any, req) do
-    IO.puts "Mirror options = #{inspect opts}"
     subscribe
     {:ok, req, nil}
   end
@@ -16,7 +15,11 @@ defmodule MirrorHandler do
 
   # A callback from gproc to broadcast msg to all clients
   def info({:mirror_protocol, msg}, req, state) do
-    {:reply, {:text, msg}, req, state, :hibernate}
+    {:reply, msg, req, state}
+  end
+
+  def info(_info, req, state) do
+    {:ok, req, state}
   end
 
   def terminate(_reason, _req, _state) do

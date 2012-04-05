@@ -1,4 +1,4 @@
-defmodule WebsocketsHandler do
+defmodule WebSocketHandler do
   @behaviour :cowboy_http_handler
   @behaviour :cowboy_http_websocket_handler
 
@@ -7,9 +7,8 @@ defmodule WebsocketsHandler do
 
   defrecord State, handler: nil, handler_state: nil
 
-  defp timeout, do: 60000
-
   def websocket_init(_any, req, opts) do
+    # Select a handler based on the WebSocket sub-protocol
     { headers, _ } = :cowboy_http_req.headers(req)
     proto = Enum.keyfind headers, "Sec-Websocket-Protocol", 1
     handler =
@@ -23,44 +22,48 @@ defmodule WebsocketsHandler do
         handler
       end
 
+    # Init selected handler
     case handler.init(_any, req) do
     match: {:ok, req, state}
       req = :cowboy_http_req.compact req
-      {:ok, req, State.new(handler: handler,
-        handler_state: state), timeout, :hibernate}
+      format_ok req, State.new(handler: handler,
+                               handler_state: state)
 
     match: {:shutdown, req, _state}
       {:shutdown, req}
     end
   end
 
+  # Dispatch generic message to the handler
   def websocket_handle({:text, msg}, req, state) do
     handler = state.handler
     handler_state = state.handler_state
+
     case handler.stream(msg, req, handler_state) do
     match: {:ok, req, new_state}
-      {:ok, req, State.handler_state(new_state), :hibernate}
+      format_ok req, state.handler_state(new_state)
 
     match: {:reply, reply, req, new_state}
-      {:reply, {:text, reply}, req,
-        State.handler_state(new_state), :hibernate}
+      format_reply req, reply, state.handler_state(new_state)
     end
   end
 
+  # Default case
   def websocket_handle(_any, req, state) do
-    {:ok, req, state}
+    format_ok req, state
   end
 
+  # Various service messages
   def websocket_info(info, req, state) do
     handler = state.handler
     handler_state = state.handler_state
+
     case handler.info(info, req, handler_state) do
     match: {:ok, req, new_state}
-      {:ok, req, State.handler_state(new_state), :hibernate}
+      format_ok req, state.handler_state(new_state)
 
     match: {:reply, reply, req, new_state}
-      {:ok, {:text, reply}, req,
-        State.handler_state(state), :hibernate}
+      format_reply req, reply, state.handler_state(new_state)
     end
   end
 
@@ -98,5 +101,16 @@ defmodule WebsocketsHandler do
 
   def terminate(_req, _state) do
     :ok
+  end
+
+
+  ## Private API
+
+  defp format_ok(req, state) do
+    {:ok, req, state, :hibernate}
+  end
+
+  defp format_reply(req, reply, state) do
+    {:reply, {:text, reply}, req, state, :hibernate}
   end
 end

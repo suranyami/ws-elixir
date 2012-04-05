@@ -1,16 +1,16 @@
 %% Feel free to use, reuse and abuse the code in this file.
 
-{application, '__MAIN__.WebsocketsServer', [
-    {description, "A minimal Websockets server."},
+{application, '__MAIN__.WebSocketServer', [
+    {description, "A minimal WebSocket server."},
     {vsn, "0.1.0"},
     {modules, []},
-    {registered, ['__MAIN__.WebsocketsSupervisor']},
+    {registered, ['__MAIN__.WebSocketSup']},
     {applications, [
         kernel
         ,stdlib
         ,cowboy
         ,gproc
     ]},
-    {mod, {'__MAIN__.WebsocketsServer', []}},
+    {mod, {'__MAIN__.WebSocketServer', []}},
     {env, []}
 ]}.
