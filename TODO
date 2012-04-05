@@ -1,0 +1,2 @@
+* Create separate handlers for dump-increment and mirror protocols. Or simply
+  make the distinction more obvious in the code.
