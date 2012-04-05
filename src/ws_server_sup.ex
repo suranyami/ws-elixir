@@ -1,4 +1,4 @@
-defmodule WebsocketsSupervisor do
+defmodule WebSocketSup do
   @behaviour :supervisor
 
   def start_link do

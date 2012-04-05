@@ -1,69 +1,70 @@
-defmodule WebsocketsHandler do
+defmodule WebSocketHandler do
   @behaviour :cowboy_http_handler
   @behaviour :cowboy_http_websocket_handler
 
-  defrecord State, counter: 0
 
-  def init({_any, :http}, req, []) do
-    case :cowboy_http_req.header(:Upgrade, req) do
-    match: {:undefined, new_req}
-      { :ok, new_req, :undefined}
-    match: {"websocket", _req}
-      { :upgrade, :protocol, :cowboy_http_websocket }
-    end
-  end
+  ## This is the part where we handle our WebSocket protocols
 
-  def handle(req, state) do
-    {:ok, html_data} = File.read("assets/test.html")
-    {:ok, new_req} = :cowboy_http_req.reply(200, [{:'Content-Type', "text/html"}], html_data, req)
-    {:ok, new_req, state}
-  end
+  defrecord State, handler: nil, handler_state: nil
 
-  def terminate(_req, _state) do
-    :ok
-  end
-
-  def websocket_init(_any, req, []) do
+  def websocket_init(_any, req, opts) do
+    # Select a handler based on the WebSocket sub-protocol
     { headers, _ } = :cowboy_http_req.headers(req)
-    proto = Enum.keyfind headers,
-                         "Sec-Websocket-Protocol",
-                         1
-    if proto === {"Sec-Websocket-Protocol", "mirror-protocol"} do
-      subscribe_for_event(:mirror_protocol)
+    proto = Enum.keyfind headers, "Sec-Websocket-Protocol", 1
+    handler =
+      case proto do
+      match: {"Sec-Websocket-Protocol", "dumb-increment-protocol"}
+        {_, handler} = Enum.keyfind opts, :dumb_protocol, 1
+        handler
+
+      match: {"Sec-Websocket-Protocol", "mirror-protocol"}
+        {_, handler} = Enum.keyfind opts, :mirror_protocol, 1
+        handler
+      end
+
+    # Init selected handler
+    case handler.init(_any, req) do
+    match: {:ok, req, state}
+      req = :cowboy_http_req.compact req
+      format_ok req, State.new(handler: handler,
+                               handler_state: state)
+
+    match: {:shutdown, req, _state}
+      {:shutdown, req}
     end
-
-    :timer.send_interval(50, :tick)
-    {:ok, :cowboy_http_req.compact(req), State.new, :hibernate}
   end
 
-  def websocket_handle({:text, "reset\n"}, req, state) do
-    {:ok, req, state.counter(0), :hibernate}
-  end
-
+  # Dispatch generic message to the handler
   def websocket_handle({:text, msg}, req, state) do
-    broadcast_message(msg)
-    {:reply, {:text, msg}, req, state, :hibernate}
+    handler = state.handler
+    handler_state = state.handler_state
+
+    case handler.stream(msg, req, handler_state) do
+    match: {:ok, req, new_state}
+      format_ok req, state.handler_state(new_state)
+
+    match: {:reply, reply, req, new_state}
+      format_reply req, reply, state.handler_state(new_state)
+    end
   end
 
+  # Default case
   def websocket_handle(_any, req, state) do
-    {:ok, req, state}
+    format_ok req, state
   end
 
-  def websocket_info(:tick, req, state) do
-    {:reply,
-      {:text, to_binary(state.counter)},
-      req,
-      state.increment_counter,
-      :hibernate}
-  end
+  # Various service messages
+  def websocket_info(info, req, state) do
+    handler = state.handler
+    handler_state = state.handler_state
 
-  # A callback from gproc to broadcast msg to all clients
-  def websocket_info({:mirror_protocol, msg}, req, state) do
-    {:reply, {:text, msg}, req, state, :hibernate}
-  end
+    case handler.info(info, req, handler_state) do
+    match: {:ok, req, new_state}
+      format_ok req, state.handler_state(new_state)
 
-  def websocket_info(_info, req, state) do
-    {:ok, req, state, :hibernate}
+    match: {:reply, reply, req, new_state}
+      format_reply req, reply, state.handler_state(new_state)
+    end
   end
 
   def websocket_terminate(_reason, _req, _state) do
@@ -71,14 +72,45 @@ defmodule WebsocketsHandler do
   end
 
 
-  ## Private functions ##
+  ## This is the HTTP part of the handler. It will only start up
+  ## properly, if the request is asking to upgrade the protocol to
+  ## WebSocket
 
-  def subscribe_for_event(event) do
-    :gproc.reg({:p, :l, event})
+  defp not_implemented(req) do
+    { :ok, req } = :cowboy_http_req.reply(501, [], [], req)
+    { :shutdown, req, :undefined }
   end
 
-  def broadcast_message(msg) do
-    :gproc.send {:p, :l, :mirror_protocol},
-                {:mirror_protocol, msg}
+  def init({_any, :http}, req, _opts) do
+    case :cowboy_http_req.header(:Upgrade, req) do
+    match: {bin, req} when is_binary(bin)
+      case :cowboy_bstr.to_lower(bin) do
+      match: "websocket"
+        { :upgrade, :protocol, :cowboy_http_websocket }
+      else:
+        not_implemented req
+      end
+    match: {:undefined, req}
+      not_implemented req
+    end
+  end
+
+  def handle(req, _state) do
+    not_implemented req
+  end
+
+  def terminate(_req, _state) do
+    :ok
+  end
+
+
+  ## Private API
+
+  defp format_ok(req, state) do
+    {:ok, req, state, :hibernate}
+  end
+
+  defp format_reply(req, reply, state) do
+    {:reply, {:text, reply}, req, state, :hibernate}
   end
 end

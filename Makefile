@@ -18,4 +18,4 @@ dist-clean: clean
 
 elixir: src/*
 	rm -rf __MAIN__
-	elixirc -pa deps/cowboy/ebin src/*.ex
+	elixirc -pa 'deps/*/ebin' src/*.ex

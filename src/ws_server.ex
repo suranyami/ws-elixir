@@ -1,4 +1,4 @@
-defmodule WebsocketsServer do
+defmodule WebSocketServer do
   @behaviour :application
 
   defp start_app(app) do
@@ -9,19 +9,21 @@ defmodule WebsocketsServer do
   def start do
     start_app :cowboy
     start_app :gproc
-    start_app WebsocketsServer
+    start_app __MODULE__
   end
 
   def start(_type, _args) do
     dispatch = [{:_, [
-      {["websocket"], WebsocketsHandler, []},
-      {:_, HelloHandler, []}
+      {["ws"],  FileHandler, []},
+      {["_ws"], WebSocketHandler, [{:dumb_protocol,   DumbIncrementHandler},
+                                   {:mirror_protocol, MirrorHandler}]},
+      {:_,      HelloHandler, []}
     ]}]
     :cowboy.start_listener :my_http_listener, 100,
       :cowboy_tcp_transport, [{:port, 8080}],
       :cowboy_http_protocol, [{:dispatch, dispatch}]
 
-    WebsocketsSupervisor.start_link
+    WebSocketSup.start_link
   end
 
   def stop(_state) do
