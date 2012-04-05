@@ -2,14 +2,14 @@
 <html lang="en">
 <head>
  <meta charset=utf-8 />
- <title>Minimal Websocket test app</title>
+ <title>Elixir Websocket</title>
 </head>
 
 <body>
 <h3>Detected Browser: <div id=brow>...</div></h3>
-<h2>libwebsockets "dumb-increment-protocol" test applet</h2>
+<h2>"dumb-increment-protocol" test</h2>
 The incrementing number is coming from the server and is individual for
-each connection to the server... try opening a second browser window.
+each connection to the server. Try opening a second browser window.
 Click the button to send the server a websocket message to
 reset the number.<br><br>
 
@@ -21,21 +21,19 @@ reset the number.<br><br>
 	</tr>
 </table>
 
-<h2>libwebsockets "lws-mirror-protocol" test applet</h2>
+<h2>"mirror-protocol" test</h2>
 Use the mouse to draw on the canvas below -- all other browser windows open
-on this page see your drawing in realtime and you can see any of theirs as
+on this page see your drawing in real time and you can see any of theirs as
 well.
 <p>
-The lws-mirror protocol doesn't interpret what is being sent to it, it just
+The mirror-protocol doesn't interpret what is being sent to it, it just
 re-sends it to every other websocket it has a connection with using that
 protocol, including the guy who sent the packet.
-<p>libwebsockets-test-client spams circles on to this shared canvas when
-run.</p>
 <br><br>
 
 <table>
 	<tr>
-		<td>Drawing color:
+		<td>Paint color:
 		<select id="color" onchange="update_color();">
 			<option value=#000000>Black</option>
 			<option value=#0000ff>Blue</option>
@@ -240,7 +238,7 @@ function reset() {
 }
 
 
-/* lws-mirror protocol */
+/* mirror protocol */
 
 	var down = 0;
 	var no_last = 1;
@@ -251,10 +249,10 @@ function reset() {
 
 	if (BrowserDetect.browser == "Firefox") {
 		socket_lm = new MozWebSocket(get_appropriate_ws_url(),
-				   "lws-mirror-protocol");
+				   "mirror-protocol");
 	} else {
     socket_lm = new WebSocket(get_appropriate_ws_url(),
-                   "lws-mirror-protocol");
+                   "mirror-protocol");
 	}
 
 
