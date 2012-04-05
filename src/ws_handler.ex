@@ -29,7 +29,7 @@ defmodule WebsocketsHandler do
                          "Sec-Websocket-Protocol",
                          1
     case proto do
-    match: {"Sec-Websocket-Protocol", "lws-mirror-protocol"}
+    match: {"Sec-Websocket-Protocol", "mirror-protocol"}
       subscribe_for_event(:mirror_protocol)
     else:
       :ok
