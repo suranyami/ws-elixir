@@ -10,27 +10,27 @@ defmodule WebSocketHandler do
   def websocket_init(_any, req, opts) do
     # Select a handler based on the WebSocket sub-protocol
     { headers, _ } = :cowboy_http_req.headers(req)
-    proto = Enum.keyfind headers, "Sec-Websocket-Protocol", 1
+    proto = List.keyfind headers, "Sec-Websocket-Protocol", 1
     handler =
       case proto do
-      match: {"Sec-Websocket-Protocol", "dumb-increment-protocol"}
-        {_, handler} = Enum.keyfind opts, :dumb_protocol, 1
-        handler
+        {"Sec-Websocket-Protocol", "dumb-increment-protocol"} ->
+          {_, handler} = List.keyfind opts, :dumb_protocol, 1
+          handler
 
-      match: {"Sec-Websocket-Protocol", "mirror-protocol"}
-        {_, handler} = Enum.keyfind opts, :mirror_protocol, 1
-        handler
+        {"Sec-Websocket-Protocol", "mirror-protocol"} ->
+          {_, handler} = List.keyfind opts, :mirror_protocol, 1
+          handler
       end
 
     # Init selected handler
     case handler.init(_any, req) do
-    match: {:ok, req, state}
-      req = :cowboy_http_req.compact req
-      format_ok req, State.new(handler: handler,
-                               handler_state: state)
+      {:ok, req, state} ->
+        req = :cowboy_http_req.compact req
+        format_ok req, State.new(handler: handler,
+                                 handler_state: state)
 
-    match: {:shutdown, req, _state}
-      {:shutdown, req}
+      {:shutdown, req, _state} ->
+        {:shutdown, req}
     end
   end
 
@@ -40,11 +40,11 @@ defmodule WebSocketHandler do
     handler_state = state.handler_state
 
     case handler.stream(msg, req, handler_state) do
-    match: {:ok, req, new_state}
-      format_ok req, state.handler_state(new_state)
+      {:ok, req, new_state} ->
+        format_ok req, state.handler_state(new_state)
 
-    match: {:reply, reply, req, new_state}
-      format_reply req, reply, state.handler_state(new_state)
+      {:reply, reply, req, new_state} ->
+        format_reply req, reply, state.handler_state(new_state)
     end
   end
 
@@ -59,11 +59,11 @@ defmodule WebSocketHandler do
     handler_state = state.handler_state
 
     case handler.info(info, req, handler_state) do
-    match: {:ok, req, new_state}
-      format_ok req, state.handler_state(new_state)
+      {:ok, req, new_state} ->
+        format_ok req, state.handler_state(new_state)
 
-    match: {:reply, reply, req, new_state}
-      format_reply req, reply, state.handler_state(new_state)
+      {:reply, reply, req, new_state} ->
+        format_reply req, reply, state.handler_state(new_state)
     end
   end
 
@@ -83,15 +83,15 @@ defmodule WebSocketHandler do
 
   def init({_any, :http}, req, _opts) do
     case :cowboy_http_req.header(:Upgrade, req) do
-    match: {bin, req} when is_binary(bin)
-      case :cowboy_bstr.to_lower(bin) do
-      match: "websocket"
-        { :upgrade, :protocol, :cowboy_http_websocket }
-      else:
+      {bin, req} when is_binary(bin) ->
+        case :cowboy_bstr.to_lower(bin) do
+          "websocket" ->
+            { :upgrade, :protocol, :cowboy_http_websocket }
+          _ ->
+            not_implemented req
+        end
+      {:undefined, req} ->
         not_implemented req
-      end
-    match: {:undefined, req}
-      not_implemented req
     end
   end
 
