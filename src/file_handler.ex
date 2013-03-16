@@ -11,11 +11,11 @@ defmodule FileHandler do
 
   def handle(req, state) do
     {:ok, html_data} = File.read("assets/test.html")
-    {:ok, req} = :cowboy_http_req.reply 200, [{:'Content-Type', "text/html"}], html_data, req
+    {:ok, req} = :cowboy_req.reply 200, [{"Content-Type", "text/html"}], html_data, req
     {:ok, req, state}
   end
 
-  def terminate(_req, _state) do
+  def terminate(_reason, _req, _state) do
     :ok
   end
 end

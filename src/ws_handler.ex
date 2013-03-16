@@ -1,6 +1,6 @@
 defmodule WebSocketHandler do
   @behaviour :cowboy_http_handler
-  @behaviour :cowboy_http_websocket_handler
+  @behaviour :cowboy_websocket_handler
 
 
   ## This is the part where we handle our WebSocket protocols
@@ -9,23 +9,23 @@ defmodule WebSocketHandler do
 
   def websocket_init(_any, req, opts) do
     # Select a handler based on the WebSocket sub-protocol
-    { headers, _ } = :cowboy_http_req.headers(req)
-    proto = List.keyfind headers, "Sec-Websocket-Protocol", 1
+    { headers, _ } = :cowboy_req.headers(req)
+    proto = List.keyfind headers, "sec-websocket-protocol", 0
     handler =
       case proto do
-        {"Sec-Websocket-Protocol", "dumb-increment-protocol"} ->
-          {_, handler} = List.keyfind opts, :dumb_protocol, 1
+        {"sec-websocket-protocol", "dumb-increment-protocol"} ->
+          {_, handler} = List.keyfind opts, :dumb_protocol, 0
           handler
 
-        {"Sec-Websocket-Protocol", "mirror-protocol"} ->
-          {_, handler} = List.keyfind opts, :mirror_protocol, 1
+        {"sec-websocket-protocol", "mirror-protocol"} ->
+          {_, handler} = List.keyfind opts, :mirror_protocol, 0
           handler
       end
 
     # Init selected handler
     case handler.init(_any, req) do
       {:ok, req, state} ->
-        req = :cowboy_http_req.compact req
+        req = :cowboy_req.compact req
         format_ok req, State.new(handler: handler,
                                  handler_state: state)
 
@@ -77,16 +77,16 @@ defmodule WebSocketHandler do
   ## WebSocket
 
   defp not_implemented(req) do
-    { :ok, req } = :cowboy_http_req.reply(501, [], [], req)
+    { :ok, req } = :cowboy_req.reply(501, [], [], req)
     { :shutdown, req, :undefined }
   end
 
   def init({_any, :http}, req, _opts) do
-    case :cowboy_http_req.header(:Upgrade, req) do
+    case :cowboy_req.header("upgrade", req) do
       {bin, req} when is_binary(bin) ->
         case :cowboy_bstr.to_lower(bin) do
           "websocket" ->
-            { :upgrade, :protocol, :cowboy_http_websocket }
+            { :upgrade, :protocol, :cowboy_websocket }
           _ ->
             not_implemented req
         end
@@ -99,7 +99,7 @@ defmodule WebSocketHandler do
     not_implemented req
   end
 
-  def terminate(_req, _state) do
+  def terminate(_reason, _req, _state) do
     :ok
   end
 

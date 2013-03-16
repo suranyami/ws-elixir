@@ -9,11 +9,11 @@ defmodule HelloHandler do
   end
 
   def handle(req, state) do
-    { :ok, req } = :cowboy_http_req.reply 200, [], "Hello world!", req
+    { :ok, req } = :cowboy_req.reply 200, [], "Hello world!", req
     { :ok, req, state }
   end
 
-  def terminate(_request, _state) do
+  def terminate(_reason, _request, _state) do
     :ok
   end
 end

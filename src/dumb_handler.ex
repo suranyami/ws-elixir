@@ -17,7 +17,7 @@ defmodule DumbIncrementHandler do
     {:reply,
       to_binary(state.counter),
       req,
-      state.increment_counter}
+      state.update_counter(fn(x) -> x + 1 end)}
   end
 
   def info(_info, req, state) do
