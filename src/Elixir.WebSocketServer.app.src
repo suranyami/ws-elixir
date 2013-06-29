@@ -1,10 +1,10 @@
 %% Feel free to use, reuse and abuse the code in this file.
 
-{application, 'Elixir-WebSocketServer', [
+{application, 'Elixir.WebSocketServer', [
     {description, "A minimal WebSocket server."},
     {vsn, "0.1.0"},
     {modules, []},
-    {registered, ['Elixir-WebSocketSup']},
+    {registered, ['Elixir.WebSocketSup']},
     {applications, [
         kernel
         ,stdlib
@@ -12,6 +12,6 @@
         ,cowboy
         ,gproc
     ]},
-    {mod, {'Elixir-WebSocketServer', []}},
+    {mod, {'Elixir.WebSocketServer', []}},
     {env, []}
 ]}.
