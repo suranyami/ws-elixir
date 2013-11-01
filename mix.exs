@@ -19,8 +19,8 @@ defmodule WsElixir.Mixfile do
   # { :foobar, "0.1", git: "https://github.com/elixir-lang/foobar.git" }
   defp deps do
     [
-      {:cowboy, "0.8.6", github: "extend/cowboy"},
-      {:gproc, %r".*", github: "esl/gproc"},
+      {:cowboy, github: "extend/cowboy"},
+      {:gproc, github: "esl/gproc"},
     ]
   end
 end

@@ -15,7 +15,7 @@ defmodule DumbIncrementHandler do
   # Received timer event
   def info(:tick, req, state) do
     {:reply,
-      to_binary(state.counter),
+      to_string(state.counter),
       req,
       state.update_counter(fn(x) -> x + 1 end)}
   end

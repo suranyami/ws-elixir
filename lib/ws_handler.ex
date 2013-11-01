@@ -26,6 +26,7 @@ defmodule WebSocketHandler do
     case handler.init(_any, req) do
       {:ok, req, state} ->
         req = :cowboy_req.compact req
+        req = :cowboy_req.set_resp_header("Sec-WebSocket-Protocol", elem(proto, 1), req)
         format_ok req, State.new(handler: handler,
                                  handler_state: state)
 
