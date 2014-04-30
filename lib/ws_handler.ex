@@ -12,11 +12,11 @@ defmodule WebSocketHandler do
     handler =
       case proto do
         {"sec-websocket-protocol", "dumb-increment-protocol"} ->
-          {_, handler} = List.keyfind opts, :dumb_protocol, 0
+          {_, handler} = List.keyfind opts, "dumb-increment-protocol", 0
           handler
 
         {"sec-websocket-protocol", "mirror-protocol"} ->
-          {_, handler} = List.keyfind opts, :mirror_protocol, 0
+          {_, handler} = List.keyfind opts, "mirror-protocol", 0
           handler
       end
 
@@ -31,7 +31,7 @@ defmodule WebSocketHandler do
     end
   end
 
-  
+
 
   # Dispatch generic message to the handler
   def websocket_handle({:text, msg}, req, state) do
