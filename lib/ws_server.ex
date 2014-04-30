@@ -5,8 +5,12 @@ defmodule WebSocketServer do
     dispatch = :cowboy_router.compile([
       {:_, [
         {'/ws',  FileHandler, []},
-        {'/_ws', WebSocketHandler, [{"dumb-increment-protocol",   DumbIncrementHandler},
-                                    {"mirror-protocol", MirrorHandler}]},
+        {'/_ws', WebSocketHandler,
+          [
+            {"dumb-increment-protocol", DumbIncrementHandler},
+            {"mirror-protocol",         MirrorHandler}
+          ]
+        },
         {'/',    HelloHandler, []}
       ]}
     ])

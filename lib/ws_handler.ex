@@ -9,29 +9,25 @@ defmodule WebSocketHandler do
     # Select a handler based on the WebSocket sub-protocol
     { headers, _ } = :cowboy_req.headers(req)
     proto = List.keyfind headers, "sec-websocket-protocol", 0
-    handler =
-      case proto do
-        {"sec-websocket-protocol", "dumb-increment-protocol"} ->
-          {_, handler} = List.keyfind opts, "dumb-increment-protocol", 0
-          handler
-
-        {"sec-websocket-protocol", "mirror-protocol"} ->
-          {_, handler} = List.keyfind opts, "mirror-protocol", 0
-          handler
-      end
-
-    # Init selected handler
-    case handler.init(_any, req) do
-      {:ok, req, state} ->
-        req = :cowboy_req.compact req
-        req = :cowboy_req.set_resp_header("Sec-WebSocket-Protocol", elem(proto, 1), req)
-        format_ok req, State.new(handler: handler, handler_state: state)
-
-      {:shutdown, req, _state} -> {:shutdown, req}
-    end
+    handler = get_handler(proto, opts)
+    handler.init(_any, req)
+    |>   handle_init(proto, handler)
   end
 
+  def handle_init({:ok, req, state}, proto, handler) do
+    req = :cowboy_req.compact req
+    req = :cowboy_req.set_resp_header("sec-webSocket-protocol", elem(proto, 1), req)
+    format_ok req, State.new(handler: handler, handler_state: state)
+  end
 
+  def handle_init({:shutdown, req, _state}, _proto, _handler) do
+    {:shutdown, req}
+  end
+
+  def get_handler({"sec-websocket-protocol", protocol}, opts) do
+    {_, handler} = List.keyfind opts, protocol, 0
+    handler
+  end
 
   # Dispatch generic message to the handler
   def websocket_handle({:text, msg}, req, state) do
