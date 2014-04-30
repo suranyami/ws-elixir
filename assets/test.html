@@ -248,11 +248,9 @@ function reset() {
 	var color = "#000000";
 
 	if (BrowserDetect.browser == "Firefox") {
-		socket_lm = new MozWebSocket(get_appropriate_ws_url(),
-				   "mirror-protocol");
+		socket_lm = new MozWebSocket(get_appropriate_ws_url(), "mirror-protocol");
 	} else {
-    socket_lm = new WebSocket(get_appropriate_ws_url(),
-                   "mirror-protocol");
+    socket_lm = new WebSocket(get_appropriate_ws_url(), "mirror-protocol");
 	}
 
 
