@@ -2,9 +2,7 @@ defmodule WebSocketHandler do
   @behaviour :cowboy_http_handler
   @behaviour :cowboy_websocket_handler
 
-
   ## This is the part where we handle our WebSocket protocols
-
   defrecord State, handler: nil, handler_state: nil
 
   def websocket_init(_any, req, opts) do
@@ -27,13 +25,13 @@ defmodule WebSocketHandler do
       {:ok, req, state} ->
         req = :cowboy_req.compact req
         req = :cowboy_req.set_resp_header("Sec-WebSocket-Protocol", elem(proto, 1), req)
-        format_ok req, State.new(handler: handler,
-                                 handler_state: state)
+        format_ok req, State.new(handler: handler, handler_state: state)
 
-      {:shutdown, req, _state} ->
-        {:shutdown, req}
+      {:shutdown, req, _state} -> {:shutdown, req}
     end
   end
+
+  
 
   # Dispatch generic message to the handler
   def websocket_handle({:text, msg}, req, state) do
